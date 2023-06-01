@@ -1,0 +1,187 @@
+﻿@page "/"
+
+<h3>Estudiantes</h3>
+
+<form @onsubmit="CrearEstudiante">
+    <label for="nombreEstudiante">Nombre:</label>
+    <input type="text" id="nombreEstudiante" @bind="nombreEstudiante" />
+
+    <label for="direccionEstudiante">Dirección:</label>
+    <input type="text" id="direccionEstudiante" @bind="direccionEstudiante" />
+
+    <label for="cursoEstudiante">Curso:</label>
+    <select id="cursoEstudiante" @bind="cursoEstudiante">
+        @foreach (var curso in cursosDisponibles)
+        {
+            <option value="@curso">@curso</option>
+        }
+    </select>
+
+    <label for="calificacionEstudiante1">Calificación 1:</label>
+    <input type="number" id="calificacionEstudiante1" @bind="calificacionEstudiante1" />
+
+    <label for="calificacionEstudiante2">Calificación 2:</label>
+    <input type="number" id="calificacionEstudiante2" @bind="calificacionEstudiante2" />
+
+    <label for="calificacionEstudiante3">Calificación 3:</label>
+    <input type="number" id="calificacionEstudiante3" @bind="calificacionEstudiante3" />
+
+    <button type="submit">Agregar Estudiante</button>
+</form>
+
+
+@if (estudiantes.Count == 0)
+{
+    <p>No hay estudiantes registrados.</p>
+}
+else
+{
+    <table>
+        <thead>
+            <tr>
+                <th>Nombre</th>
+                <th>Dirección</th>
+                <th>Número de Cursos</th>
+                <th>Cursos</th>
+                <th>Calificaciones</th>
+                <th>Promedio</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var estudiante in estudiantes)
+            {
+                <tr>
+                    <td>@estudiante.Nombre</td>
+                    <td>@estudiante.Direccion</td>
+                    <td>@estudiante.NumeroCursos</td>
+                    <td>@string.Join(", ", estudiante.Cursos)</td>
+                    <td>@string.Join(", ", estudiante.Calificaciones)</td>
+                    <td>@estudiante.ObtenerPromedioCalificaciones()</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+<br />
+
+<h3>Docentes</h3>
+
+<form @onsubmit="CrearDocente">
+    <label for="nombreDocente">Nombre:</label>
+    <input type="text" id="nombreDocente" @bind="nombreDocente" />
+
+    <label for="direccionDocente">Dirección:</label>
+    <input type="text" id="direccionDocente" @bind="direccionDocente" />
+
+    <label for="cursoDocente">Curso:</label>
+    <select id="cursoDocente" @bind="cursoDocente">
+        @foreach (var curso in cursosDisponibles)
+        {
+            <option value="@curso">@curso</option>
+        }
+    </select>
+
+    <button type="submit">Agregar Docente</button>
+</form>
+
+@if (docentes.Count == 0)
+{
+    <p>No hay docentes registrados.</p>
+}
+else
+{
+    <table>
+        <thead>
+            <tr>
+                <th>Nombre</th>
+                <th>Dirección</th>
+                <th>Número de Cursos</th>
+                <th>Cursos</th>
+                <th>Puede Agregar Curso</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var docente in docentes)
+            {
+                <tr>
+                    <td>@docente.Nombre</td>
+                    <td>@docente.Direccion</td>
+                    <td>@docente.Cursos.Count</td>
+                    <td>@string.Join(", ", docente.Cursos)</td>
+                    <td>@(docente.CursoRepetido ? "No puede" : "Puede")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    List<Estudiante> estudiantes = new List<Estudiante>();
+    List<Docente> docentes = new List<Docente>();
+    string? cursoDocente;
+    string? cursoEstudiante;
+    int calificacionEstudiante1;
+    int calificacionEstudiante2;
+    int calificacionEstudiante3;
+    string? nombreEstudiante;
+    string? direccionEstudiante;
+
+    string? nombreDocente;
+    string? direccionDocente;
+
+    List<string> cursosDisponibles = new List<string>()
+    {
+        "Matemáticas",
+        "Historia",
+        "Inglés",
+        "Ciencias",
+    };
+    protected void CrearEstudiante()
+    {
+        var estudiante = new Estudiante()
+        {
+            Nombre = nombreEstudiante,
+            Direccion = direccionEstudiante,
+        };
+
+        estudiante.AgregarCursoCalificacion(cursoEstudiante ?? string.Empty, calificacionEstudiante1);
+        estudiante.AgregarCursoCalificacion(cursoEstudiante ?? string.Empty, calificacionEstudiante2);
+        estudiante.AgregarCursoCalificacion(cursoEstudiante ?? string.Empty, calificacionEstudiante3);
+
+        estudiantes.Add(estudiante);
+
+        nombreEstudiante = string.Empty;
+        direccionEstudiante = string.Empty;
+        cursoEstudiante = string.Empty;
+        calificacionEstudiante1 = 0;
+        calificacionEstudiante2 = 0;
+        calificacionEstudiante3 = 0;
+    }
+
+    protected void CrearDocente()
+    {
+        var docente = new Docente()
+        {
+            Nombre = nombreDocente,
+            Direccion = direccionDocente,
+        };
+
+        if (docentes.Any(d => d.Cursos.Contains(cursoDocente ?? string.Empty)))
+        {
+            docente.CursoRepetido = true;
+        }
+        else
+        {
+            docente.Cursos.Add(cursoDocente ?? string.Empty);
+        }
+
+        // Agrega el docente a la lista
+        docentes.Add(docente);
+
+        // Reinicia los valores del formulario
+        nombreDocente = string.Empty;
+        direccionDocente = string.Empty;
+        cursoDocente = string.Empty;
+    }
+}
